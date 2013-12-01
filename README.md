@@ -25,7 +25,14 @@ Wenn Maven installiert ist, kann das Projekt wie folgt übersetzt werden:
 
 Danach wie zuvor die JAR Datei aufrufen:
 
-    $ hadoop jar target/h-muenster-bde-lesson-3.jar
+    $ hadoop jar target/fh-muenster-bde-lesson-3-1.0-SNAPSHOT-mrjob.jar
+
+Für den TF-IDF Teil sind die MapReduce Klassen von einem
+[Blog Post](https://code.google.com/p/hadoop-clusternet/wiki/RunningMapReduceExampleTFIDF) entnommen. Es stehen 20 Testdokumente (die Top 20 aus dem [Gutenberg](http://www.gutenberg.org/browse/scores/top) Projekt) in `src/main/resources/books` zur Verfügung. Der ganze Ablauf ist in einer Klasse mit Hilfe des `JobControl` zusammengefügt. Damit kann der Prozess komplett so ausgeführt werden:
+
+    $ hadoop jar target/fh-muenster-bde-lesson-3-1.0-SNAPSHOT-mrjob.jar tfidf -jt local target/classes/books/ tfidf1
+
+Mit `-jt local` wird der Job lokal, also in einem Thread ausgeführt. In der Cloudera VM kann dies auch weggelassen werden und der volle Prozessstack ausgenutzt werden.
 
 Viel Glück!
 
