@@ -21,12 +21,24 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.4</version>
         <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/mrjob.xml</descriptor>
+          </descriptors>
           <archive>
             <manifest>
               <mainClass>org.fhmuenster.bde.mr.Driver</mainClass>
             </manifest>
           </archive>
         </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
