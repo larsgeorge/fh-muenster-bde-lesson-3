@@ -9,6 +9,15 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
+/**
+ * <p>Einfaches WordCount MapReduce Programm. Hier wird exemplarisch <i>nicht</i> die
+ * Hadoop <code>Tool</code>, <code>ToolRunner</code> und <code>Configured</code>
+ * Klassen benutzt, sondern der <code>GenericOptionsParser</code> direkt.</p>
+ *
+ * <p>Die Mapper und Reducer Klassen sind ausserdem in externen Klassen angelegt. Diese
+ * könnten auch hier als innere Klassen definiert werden. Beide Wege sind gleichwertig
+ * und können nach eigenem Ermessen ausgewählt werden.</p>
+ */
 public class WordCount {
 
   public static void main(String[] args) throws Exception {
