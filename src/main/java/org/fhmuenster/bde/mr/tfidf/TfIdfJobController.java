@@ -8,10 +8,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.jobcontrol.ControlledJob;
 import org.apache.hadoop.mapreduce.lib.jobcontrol.JobControl;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -19,6 +19,18 @@ public class TFIDFJobController extends Configured implements Tool {
 
   private static final String OUTPUT_PATH = "1-word-freq";
   private static final String OUTPUT_PATH_2 = "2-word-counts";
+
+  public class JobRunner implements Runnable {
+    private JobControl control;
+
+    public JobRunner(JobControl control) {
+      this.control = control;
+    }
+
+    public void run() {
+      this.control.run();
+    }
+  }
 
   public int run(String[] args) throws Exception {
     if (args.length < 2) {
@@ -54,10 +66,8 @@ public class TFIDFJobController extends Configured implements Tool {
     job.setReducerClass(WordFrequencyInDocument.WordFrequencyInDocReducer.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(IntWritable.class);
-    job.setInputFormatClass(TextInputFormat.class);
-    job.setOutputFormatClass(TextOutputFormat.class);
-    TextInputFormat.addInputPath(job, userInputPath);
-    TextOutputFormat.setOutputPath(job, new Path(OUTPUT_PATH));
+    FileInputFormat.addInputPath(job, userInputPath);
+    FileOutputFormat.setOutputPath(job, new Path(OUTPUT_PATH));
 
     ControlledJob controlledJob1 = new ControlledJob(job, null);
 
@@ -69,10 +79,8 @@ public class TFIDFJobController extends Configured implements Tool {
     job2.setReducerClass(WordCountsInDocuments.WordCountsForDocsReducer.class);
     job2.setOutputKeyClass(Text.class);
     job2.setOutputValueClass(Text.class);
-    job2.setInputFormatClass(TextInputFormat.class);
-    job2.setOutputFormatClass(TextOutputFormat.class);
-    TextInputFormat.addInputPath(job2, new Path(OUTPUT_PATH));
-    TextOutputFormat.setOutputPath(job2, new Path(OUTPUT_PATH_2));
+    FileInputFormat.addInputPath(job2, new Path(OUTPUT_PATH));
+    FileOutputFormat.setOutputPath(job2, new Path(OUTPUT_PATH_2));
 
     ControlledJob controlledJob2 = new ControlledJob(job2, null);
     controlledJob2.addDependingJob(controlledJob1);
@@ -85,10 +93,8 @@ public class TFIDFJobController extends Configured implements Tool {
     job3.setReducerClass(WordsInCorpusTFIDF.WordsInCorpusTFIDFReducer.class);
     job3.setOutputKeyClass(Text.class);
     job3.setOutputValueClass(Text.class);
-    job3.setInputFormatClass(TextInputFormat.class);
-    job3.setOutputFormatClass(TextOutputFormat.class);
-    TextInputFormat.addInputPath(job3, new Path(OUTPUT_PATH_2));
-    TextOutputFormat.setOutputPath(job3, userOutputPath);
+    FileInputFormat.addInputPath(job3, new Path(OUTPUT_PATH_2));
+    FileOutputFormat.setOutputPath(job3, userOutputPath);
 
     ControlledJob controlledJob3 = new ControlledJob(job3, null);
     controlledJob3.addDependingJob(controlledJob2);
@@ -97,13 +103,18 @@ public class TFIDFJobController extends Configured implements Tool {
     control.addJob(controlledJob1);
     control.addJob(controlledJob2);
     control.addJob(controlledJob3);
-    control.run();
-    return control.allFinished() ? 0 : 1;
+
+    JobRunner runner = new JobRunner(control);
+    new Thread(runner).start();
+    while (!control.allFinished()) {
+      System.out.println("Still running...");
+      Thread.sleep(5000);
+    }
+    return control.getFailedJobList().size() == 0 ? 0 : 1;
   }
 
   public static void main(String[] args) throws Exception {
-    int res = ToolRunner.run(new Configuration(),
-      new TFIDFJobController(), args);
+    int res = ToolRunner.run(new Configuration(), new TFIDFJobController(), args);
     System.exit(res);
   }
 }

@@ -21,10 +21,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-/**
- * MAP: [term-1, term-2, ...] book.txt -> term1@book.txt -> 1, term-2@book.txt -> 1
- * REDUCE: [term-1@book.txt -> 23, term-2@book.txt -> 13, ...]
- */
 public class WordFrequencyInDocument extends Configured implements Tool {
 
   private static final String OUTPUT_PATH = "1-word-freq";

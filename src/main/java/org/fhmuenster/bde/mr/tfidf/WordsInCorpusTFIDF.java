@@ -7,24 +7,18 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-/**
- * MAP: <"word@doc1#D">
- * REDUCER: <"word@doc1#D, [d/D, f/F, TF-IDF]">, <"word2@a.txt, [5/13,  34/330494, 0.0004553]">
- */
 public class WordsInCorpusTFIDF extends Configured implements Tool {
 
   private static final String INPUT_PATH = "2-word-counts";
@@ -66,8 +60,8 @@ public class WordsInCorpusTFIDF extends Configured implements Tool {
       }
       for (String document : tempFrequencies.keySet()) {
         String[] wordFrequenceAndTotalWords = tempFrequencies.get(document).split("/");
-        double tf = Double.valueOf(Double.valueOf(wordFrequenceAndTotalWords[0]) / Double
-          .valueOf(wordFrequenceAndTotalWords[1]));
+        double tf = Double.valueOf(Double.valueOf(wordFrequenceAndTotalWords[0]) /
+          Double.valueOf(wordFrequenceAndTotalWords[1]));
         double idf = Math.log10((double) numberOfDocumentsInCorpus /
           (double) ((numberOfDocumentsInCorpusWhereKeyAppears == 0 ? 1 : 0) +
             numberOfDocumentsInCorpusWhereKeyAppears));
@@ -101,8 +95,8 @@ public class WordsInCorpusTFIDF extends Configured implements Tool {
     job.setReducerClass(WordsInCorpusTFIDFReducer.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(Text.class);
-    TextInputFormat.addInputPath(job, new Path(INPUT_PATH));
-    TextOutputFormat.setOutputPath(job, userOutputPath);
+    FileInputFormat.addInputPath(job, new Path(INPUT_PATH));
+    FileOutputFormat.setOutputPath(job, userOutputPath);
     return job.waitForCompletion(true) ? 0 : 1;
   }
 
