@@ -1,4 +1,4 @@
-package org.fhmuenster.bde.mr;
+package org.fhmuenster.bde.mr.tfidf;
 
 import java.io.IOException;
 import java.util.HashSet;

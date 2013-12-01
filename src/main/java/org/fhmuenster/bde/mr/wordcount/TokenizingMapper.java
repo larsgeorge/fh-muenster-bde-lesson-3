@@ -1,4 +1,4 @@
-package org.fhmuenster.bde.mr;
+package org.fhmuenster.bde.mr.wordcount;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;

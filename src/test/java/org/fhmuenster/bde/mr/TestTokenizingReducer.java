@@ -1,6 +1,7 @@
 package org.fhmuenster.bde.mr;
 
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
+import org.fhmuenster.bde.mr.wordcount.TokenizingMapper;
 import org.junit.*;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
