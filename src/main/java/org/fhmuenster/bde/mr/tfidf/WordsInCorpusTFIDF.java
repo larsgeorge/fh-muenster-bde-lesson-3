@@ -27,8 +27,7 @@ import org.apache.hadoop.util.ToolRunner;
  */
 public class WordsInCorpusTFIDF extends Configured implements Tool {
 
-  private static final String OUTPUT_PATH = "1-word-freq";
-  private static final String OUTPUT_PATH_2 = "2-word-counts";
+  private static final String INPUT_PATH = "2-word-counts";
 
   public static class WordsInCorpusTFIDFMapper
     extends Mapper<LongWritable, Text, Text, Text> {
@@ -84,89 +83,27 @@ public class WordsInCorpusTFIDF extends Configured implements Tool {
   }
 
   public int run(String[] args) throws Exception {
+    if (args.length < 2) {
+      System.out.println("Usage: tfidf <out> <numfiles>");
+      return 2;
+    }
     Configuration conf = getConf();
     FileSystem fs = FileSystem.get(conf);
-
-    if (args[0] == null || args[1] == null) {
-      System.out.println("You need to provide the arguments of the input and output");
-      System.out.println(
-        WordsInCorpusTFIDF.class.getSimpleName() +
-          " prot:///path/to/input prot:///path/output");
-      System.out.println(
-        WordsInCorpusTFIDF.class.getSimpleName() +
-          " -conf  /path/to/input /path/to/output");
-    }
-
-    Path userInputPath = new Path(args[0]);
-
-    // Remove the user's output path
-    Path userOutputPath = new Path(args[1]);
+    Path userOutputPath = new Path(args[0]);
     if (fs.exists(userOutputPath)) {
       fs.delete(userOutputPath, true);
     }
+    conf.setInt("numberOfDocsInCorpus", Integer.parseInt(args[1]));
 
-    // Remove the phrase of word frequency path
-    Path wordFreqPath = new Path(OUTPUT_PATH);
-    if (fs.exists(wordFreqPath)) {
-      fs.delete(wordFreqPath, true);
-    }
-
-    // Remove the phase of word counts path
-    Path wordCountsPath = new Path(OUTPUT_PATH_2);
-    if (fs.exists(wordCountsPath)) {
-      fs.delete(wordCountsPath, true);
-    }
-
-    //Getting the number of documents from the user's input directory.
-    FileStatus[] userFilesStatusList = fs.listStatus(userInputPath);
-    final int numberOfUserInputFiles = userFilesStatusList.length;
-    String[] fileNames = new String[numberOfUserInputFiles];
-    for (int i = 0; i < numberOfUserInputFiles; i++) {
-      fileNames[i] = userFilesStatusList[i].getPath().getName();
-    }
-
-    Job job = new Job(conf, "Word Frequency In Document");
-    job.setJarByClass(WordFrequencyInDocument.class);
-    job.setMapperClass(WordFrequencyInDocument.WordFrequencyInDocMapper.class);
-    job.setReducerClass(WordFrequencyInDocument.WordFrequencyInDocReducer.class);
+    Job job = new Job(conf, "TF-IDF of Words in Corpus");
+    job.setJarByClass(WordsInCorpusTFIDF.class);
+    job.setMapperClass(WordsInCorpusTFIDFMapper.class);
+    job.setReducerClass(WordsInCorpusTFIDFReducer.class);
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(IntWritable.class);
-    job.setInputFormatClass(TextInputFormat.class);
-    job.setOutputFormatClass(TextOutputFormat.class);
-    TextInputFormat.addInputPath(job, userInputPath);
-    TextOutputFormat.setOutputPath(job, new Path(OUTPUT_PATH));
-
-    job.waitForCompletion(true);
-
-    Configuration conf2 = getConf();
-    conf2.setStrings("documentsInCorpusList", fileNames);
-    Job job2 = new Job(conf2, "Words Counts");
-    job2.setJarByClass(WordCountsInDocuments.class);
-    job2.setMapperClass(WordCountsInDocuments.WordCountsForDocsMapper.class);
-    job2.setReducerClass(WordCountsInDocuments.WordCountsForDocsReducer.class);
-    job2.setOutputKeyClass(Text.class);
-    job2.setOutputValueClass(Text.class);
-    job2.setInputFormatClass(TextInputFormat.class);
-    job2.setOutputFormatClass(TextOutputFormat.class);
-    TextInputFormat.addInputPath(job2, new Path(OUTPUT_PATH));
-    TextOutputFormat.setOutputPath(job2, new Path(OUTPUT_PATH_2));
-
-    job2.waitForCompletion(true);
-
-    Configuration conf3 = getConf();
-    conf3.setInt("numberOfDocsInCorpus", numberOfUserInputFiles);
-    Job job3 = new Job(conf3, "TF-IDF of Words in Corpus");
-    job3.setJarByClass(WordsInCorpusTFIDF.class);
-    job3.setMapperClass(WordsInCorpusTFIDFMapper.class);
-    job3.setReducerClass(WordsInCorpusTFIDFReducer.class);
-    job3.setOutputKeyClass(Text.class);
-    job3.setOutputValueClass(Text.class);
-    job3.setInputFormatClass(TextInputFormat.class);
-    job3.setOutputFormatClass(TextOutputFormat.class);
-    TextInputFormat.addInputPath(job3, new Path(OUTPUT_PATH_2));
-    TextOutputFormat.setOutputPath(job3, userOutputPath);
-
-    return job3.waitForCompletion(true) ? 0 : 1;
+    job.setOutputValueClass(Text.class);
+    TextInputFormat.addInputPath(job, new Path(INPUT_PATH));
+    TextOutputFormat.setOutputPath(job, userOutputPath);
+    return job.waitForCompletion(true) ? 0 : 1;
   }
 
   public static void main(String[] args) throws Exception {

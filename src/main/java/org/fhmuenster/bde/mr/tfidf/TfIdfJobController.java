@@ -15,21 +15,18 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-public class TfIdfJobController extends Configured implements Tool {
+public class TFIDFJobController extends Configured implements Tool {
 
   private static final String OUTPUT_PATH = "1-word-freq";
   private static final String OUTPUT_PATH_2 = "2-word-counts";
 
   public int run(String[] args) throws Exception {
+    if (args.length < 2) {
+      System.out.println("Usage: tfidf <in> <out>");
+      return 2;
+    }
     Configuration conf = getConf();
     FileSystem fs = FileSystem.get(conf);
-
-    if (args.length < 2) {
-      System.out.println("You need to provide the arguments of the input and output");
-      System.out.println(WordsInCorpusTFIDF.class.getSimpleName() + " <in> <out>");
-      System.exit(1);
-    }
-
     Path userInputPath = new Path(args[0]);
     Path userOutputPath = new Path(args[1]);
     if (fs.exists(userOutputPath)) {
@@ -106,7 +103,7 @@ public class TfIdfJobController extends Configured implements Tool {
 
   public static void main(String[] args) throws Exception {
     int res = ToolRunner.run(new Configuration(),
-      new TfIdfJobController(), args);
+      new TFIDFJobController(), args);
     System.exit(res);
   }
 }

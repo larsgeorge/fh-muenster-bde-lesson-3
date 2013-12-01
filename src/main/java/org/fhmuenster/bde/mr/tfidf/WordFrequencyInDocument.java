@@ -118,9 +118,12 @@ public class WordFrequencyInDocument extends Configured implements Tool {
   }
 
   public int run(String[] args) throws Exception {
+    if (args.length < 1) {
+      System.out.println("Usage: tfidf <in>");
+      return 2;
+    }
     Configuration conf = getConf();
     Job job = new Job(conf, "Word Frequency In Document");
-
     job.setJarByClass(WordFrequencyInDocument.class);
     job.setMapperClass(WordFrequencyInDocMapper.class);
     job.setReducerClass(WordFrequencyInDocReducer.class);

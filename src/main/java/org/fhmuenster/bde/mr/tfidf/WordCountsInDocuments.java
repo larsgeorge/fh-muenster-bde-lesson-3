@@ -23,8 +23,8 @@ import org.apache.hadoop.util.ToolRunner;
  */
 public class WordCountsInDocuments extends Configured implements Tool {
 
-  private static final String OUTPUT_PATH = "2-word-counts";
   private static final String INPUT_PATH = "1-word-freq";
+  private static final String OUTPUT_PATH = "2-word-counts";
 
   public static class WordCountsForDocsMapper
     extends Mapper<LongWritable, Text, Text, Text> {
@@ -68,7 +68,6 @@ public class WordCountsInDocuments extends Configured implements Tool {
   public int run(String[] args) throws Exception {
     Configuration conf = getConf();
     Job job = new Job(conf, "Words Counts");
-
     job.setJarByClass(WordCountsInDocuments.class);
     job.setMapperClass(WordCountsForDocsMapper.class);
     job.setReducerClass(WordCountsForDocsReducer.class);
